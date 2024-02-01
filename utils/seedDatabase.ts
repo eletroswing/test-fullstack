@@ -5,6 +5,9 @@ const filePath = "./resources/uscities-data.csv";
 import state from "../src/adapters/state";
 
 async function clear() {
+  await new Promise((resolve, reject) =>
+    setTimeout(() => resolve(true), 5000)
+  );
   await state.deleteAll();
 }
 
@@ -17,36 +20,41 @@ for (let i = 0; i < 50; i++) {
 }
 
 var json: any = {};
-
-console.log('cleaning');
-clear();
-console.log('cleaned');
-console.log('compiling');
 let lineCounter = 0;
 let chunkCounter = 0;
 
-async function compileChunk(){
-  chunkCounter++
-  console.log(`Chunk ${chunkCounter} : compiling ${1000*(chunkCounter -1)}:${1000*chunkCounter}`);
+async function compileChunk() {
+  chunkCounter++;
+  console.log(
+    `Chunk ${chunkCounter} : compiling ${1000 * (chunkCounter - 1)}:${
+      1000 * chunkCounter
+    }`
+  );
   console.log(`Chunk ${chunkCounter} : Sending`);
   const values = Object.values(json);
   await models.StateModel.insertMany(values);
-  console.log(`Chunk ${chunkCounter} : Done`)
+  console.log(`Chunk ${chunkCounter} : Done`);
 }
 
-fs.createReadStream(filePath)
-  .pipe(csvParser())
-  .on("data", async (row) => {
-    lineCounter++;
+async function run() {
+  console.log("cleaning");
+  await clear();
+  console.log("cleaned");
+  console.log("compiling");
 
-    if (!json[row.state_id.toLowerCase()])
-      json[row.state_id.toLowerCase()] = {
-        state: row.state_name,
-        state_id: row.state_id.toLowerCase(),
-        cities: [],
-      };
+  fs.createReadStream(filePath)
+    .pipe(csvParser())
+    .on("data", async (row) => {
+      lineCounter++;
 
-    const city = {
+      if (!json[row.state_id.toLowerCase()])
+        json[row.state_id.toLowerCase()] = {
+          state: row.state_name,
+          state_id: row.state_id.toLowerCase(),
+          cities: [],
+        };
+
+      const city = {
         city: row.city,
         city_id: row.city.toLowerCase().replace(/ /g, "_"),
         page: {
@@ -58,15 +66,18 @@ fs.createReadStream(filePath)
           embedded_videos: [],
           attorney: [],
         },
+      };
+
+      json[row.state_id.toLowerCase()].cities.push(city);
+      if (lineCounter % 1000 === 0) {
+        await compileChunk();
+        json = {};
       }
-    
-    json[row.state_id.toLowerCase()].cities.push(city);
-    if (lineCounter % 1000 === 0) {
+    })
+    .on("end", async () => {
       await compileChunk();
-      json = {}
-    }
-  })
-  .on("end", async () => {
-    await compileChunk();
-    process.exit(0)
-  });
+      process.exit(0);
+    });
+}
+
+run();
