@@ -21,12 +21,13 @@ PublicRouter.get("/", async (request: Request, response: Response) => {
       })
     );
 
-    const stateResult = await state.getAllStates();
+    const stateResult = await state.getAllStates(request.query.page ? Number(request.query.page) : 1);
     if (!stateResult || !stateResult.length)
       return errors.NotFoundError(response);
 
     return response.status(200).json({
       states: validator(outputSchema)(stateResult),
+      total_pages: await state.getStatesPageCount(),
     });
   } catch (error) {
     logger.log(error);
@@ -43,12 +44,13 @@ PublicRouter.get("/:stateId", async (request: Request, response: Response) => {
       })
     );
 
-    const cityResult = await city.getAllCityFromState(request.params.stateId);
+    const cityResult = await city.getAllCityFromState(request.params.stateId, request.query.page ? Number(request.query.page) : 1);
     if (!cityResult || !cityResult.length)
       return errors.NotFoundError(response);
 
     return response.status(200).json({
       cities: validator(outputSchema)(cityResult),
+      total_pages: await city.getAllCityFromStatePageCount(request.params.stateId),
     });
   } catch (error) {
     logger.log(error);

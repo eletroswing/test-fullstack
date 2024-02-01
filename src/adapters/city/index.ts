@@ -31,14 +31,29 @@ async function createCity(stateId: string, cityName: string, cityId: string) {
   }
 }
 
-async function getAllCityFromState(stateId: string) {
+async function getAllCityFromState(stateId: string, page: number = 1) {
+  const skip = (page - 1) * 30;
+
   try {
-    const state = await models.StateModel.findOne({ state_id: stateId });
+    const state = await models.StateModel.findOne({ state_id: stateId }, { cities: { $slice: [skip, 30] } });
 
     return state?.cities;
   } catch (err) {
-    throw new Error(`Error searching the city: ${err}`);
+    throw new Error(`Error searching the cities: ${err}`);
   }
+}
+
+async function getAllCityFromStatePageCount(stateId: string){
+  const state = await models.StateModel.aggregate([
+    { $match: { state_id: stateId } },
+    { $project: { cityCount: { $size: "$cities" } } }
+  ]);
+
+  const cityCount = state[0].cityCount;
+
+  const totalPages = Math.ceil(cityCount / 30);
+
+  return totalPages;
 }
 
 async function findCityByIdAndStateId(stateId: string, cityId: string) {
@@ -59,5 +74,6 @@ async function findCityByIdAndStateId(stateId: string, cityId: string) {
 export default Object.freeze({
   getAllCityFromState,
   createCity,
+  getAllCityFromStatePageCount,
   findCityByIdAndStateId,
 });

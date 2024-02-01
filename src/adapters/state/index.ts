@@ -16,10 +16,19 @@ async function findStateById(stateId: string) {
   return state;
 }
 
-async function getAllStates() {
-  const states = await models.StateModel.find();
+async function getAllStates(page: any = 1) {
+  const skip = (page - 1) * 30;
 
-  return states;
+  const states = await models.StateModel.find().skip(skip).limit(30);
+
+  return states;  
+}
+
+async function getStatesPageCount(){
+  const totalStates = await models.StateModel.countDocuments();
+  const totalPages = Math.ceil(totalStates / 30);
+
+  return totalPages;
 }
 
 async function deleteAll() {
@@ -31,4 +40,5 @@ export default Object.freeze({
   findStateById,
   getAllStates,
   deleteAll,
+  getStatesPageCount,
 });
