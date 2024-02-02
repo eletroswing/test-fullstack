@@ -57,7 +57,7 @@ PublicRouter.get("/:stateId", async (request: Request, response: Response) => {
       })
     );
 
-    const cache = await CacheSystem.search(`statepage-${request.params.sateId}/${request.query.page ? Number(request.query.page) : 1}`);
+    const cache = await CacheSystem.search(`statepage-${request.params.stateId}/${request.query.page ? Number(request.query.page) : 1}`);
     if(cache) {
       return response.status(200).json({
         cities: validator(outputSchema)(cache),
@@ -69,7 +69,7 @@ PublicRouter.get("/:stateId", async (request: Request, response: Response) => {
     if (!cityResult || !cityResult.length)
       return errors.NotFoundError(response);
 
-    await CacheSystem.save(`statepage-${request.params.sateId}/${request.query.page ? Number(request.query.page) : 1}`, 3600, cityResult);
+    await CacheSystem.save(`statepage-${request.params.stateId}/${request.query.page ? Number(request.query.page) : 1}`, 3600, cityResult);
 
     return response.status(200).json({
       cities: validator(outputSchema)(cityResult),
