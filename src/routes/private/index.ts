@@ -1,14 +1,21 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 
+import Dotenv from "dotenv";
+Dotenv.config();
+
 import errors from "../../../infra/errors";
 import logger from "../../../infra/logger";
 
 import isAuthenticated from "../../middlewares/isAuthenticated";
 import zodInputValidation from "../../middlewares/zodInputValidation";
 
+import queue from "../../queue";
+
 import page from "../../adapters/page";
-import { configDotenv } from "dotenv";
+import cache from "../../../infra/cache";
+
+const CacheSystem = new cache(process.env.REDIS as string);
 
 const PrivateRoute: Router = Router();
 
@@ -16,21 +23,53 @@ PrivateRoute.use(isAuthenticated);
 
 PrivateRoute.patch(
   "/:stateId/:cityId/header",
-  zodInputValidation(z.object({ image: z.string(), title: z.string() })),
+  zodInputValidation(
+    z.object({ image: z.string().optional(), title: z.string().optional() })
+  ),
   async (request: Request, response: Response) => {
     try {
+
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
+      }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "header",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            image: request.body.image,
+            title: request.body.title,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
       const pageResult = await page.getPage(
         request.params.stateId,
         request.params.cityId
       );
-      if (!pageResult) return errors.NotFoundError(response);
 
-      await page.updateHeader(
-        request.params.stateId,
-        request.params.cityId,
-        request.body.image,
-        request.body.title
-      );
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "header",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          image: request.body.image,
+          title: request.body.title,
+        },
+      });
+
       return response.status(200).end();
     } catch (error) {
       logger.log(error);
@@ -50,17 +89,46 @@ PrivateRoute.patch(
   ),
   async (request: Request, response: Response) => {
     try {
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
+      }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "zips",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            zips: request.body.zips,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
       const pageResult = await page.getPage(
         request.params.stateId,
         request.params.cityId
       );
-      if (!pageResult) return errors.NotFoundError(response);
 
-      await page.updateZips(
-        request.params.stateId,
-        request.params.cityId,
-        request.body.zips
-      );
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "zips",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          zips: request.body.zips,
+        },
+      });
+
+      
       return response.status(200).end();
     } catch (error) {
       logger.log(error);
@@ -93,17 +161,45 @@ PrivateRoute.patch(
   ),
   async (request: Request, response: Response) => {
     try {
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
+      }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "faqs",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            faqs: request.body.faqs,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
       const pageResult = await page.getPage(
         request.params.stateId,
         request.params.cityId
       );
-      if (!pageResult) return errors.NotFoundError(response);
 
-      await page.updateFaqs(
-        request.params.stateId,
-        request.params.cityId,
-        request.body.faqs
-      );
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "faqs",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          faqs: request.body.faqs,
+        },
+      });
+
       return response.status(200).end();
     } catch (error) {
       logger.log(error);
@@ -156,17 +252,46 @@ PrivateRoute.patch(
   ),
   async (request: Request, response: Response) => {
     try {
+
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
+      }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "reviews",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            reviews: request.body.reviews,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
       const pageResult = await page.getPage(
         request.params.stateId,
         request.params.cityId
       );
-      if (!pageResult) return errors.NotFoundError(response);
 
-      await page.updateReviews(
-        request.params.stateId,
-        request.params.cityId,
-        request.body.reviews
-      );
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "reviews",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          reviews: request.body.reviews,
+        },
+      });
+      
       return response.status(200).end();
     } catch (error) {
       logger.log(error);
@@ -181,12 +306,10 @@ PrivateRoute.patch(
     z.object({
       embedded: z.array(
         z.object({
-          url: z
-            .string({
-              required_error:
-                "embedded[i].url value is necessary to access this route",
-            })
-            .url("embedded[i].url must be an url"),
+          url: z.string({
+            required_error:
+              "embedded[i].url value is necessary to access this route",
+          }),
           provider: z
             .string({
               required_error:
@@ -205,17 +328,45 @@ PrivateRoute.patch(
   ),
   async (request: Request, response: Response) => {
     try {
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
+      }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "embedded",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            embedded: request.body.embedded,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
       const pageResult = await page.getPage(
         request.params.stateId,
         request.params.cityId
       );
-      if (!pageResult) return errors.NotFoundError(response);
 
-      await page.updateembeddedVideos(
-        request.params.stateId,
-        request.params.cityId,
-        request.body.embedded
-      );
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "embedded",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          embedded: request.body.embedded,
+        },
+      });
+
       return response.status(200).end();
     } catch (error) {
       logger.log(error);
@@ -238,6 +389,16 @@ PrivateRoute.patch(
             required_error:
               "attorney[i].name value is necessary to access this route",
           }),
+          image: z.string({
+            required_error:
+              "attorney[i].image value is necessary to access this route",
+          }),
+          email: z
+            .string({
+              required_error:
+                "attorney[i].email value is necessary to access this route",
+            })
+            .email("attorney[i].email must be an email"),
           address: z.string({
             required_error:
               "attorney[i].address value is necessary to access this route",
@@ -268,17 +429,45 @@ PrivateRoute.patch(
   ),
   async (request: Request, response: Response) => {
     try {
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
+      }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "attorney",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            attorney: request.body.attorney,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
       const pageResult = await page.getPage(
         request.params.stateId,
         request.params.cityId
       );
-      if (!pageResult) return errors.NotFoundError(response);
 
-      await page.updateAttorney(
-        request.params.stateId,
-        request.params.cityId,
-        request.body.attorney
-      );
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "attorney",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          attorney: request.body.attorney,
+        },
+      });
+     
       return response.status(200).end();
     } catch (error) {
       logger.log(error);
@@ -288,61 +477,86 @@ PrivateRoute.patch(
 );
 
 PrivateRoute.patch(
-    "/:stateId/:cityId/article",
-    zodInputValidation(
-      z.object({
-        articles: z.array(
-          z.object({
-            title: z.string({
-              required_error:
-                "article[i].title value is necessary to access this route",
-            }),
-            text: z.string({
-              required_error:
-                "article[i].text value is necessary to access this route",
-            }),
-            created_at: z.coerce.date({
-              required_error:
-                "article[i].created_at value is necessary to access this route",
-            }),
-            slug: z
-              .string({
-                required_error:
-                  "article[i].slug value is necessary to access this route",
-              })
-              .url("article[i].slug must be an url"),
-            image: z
-              .string({
-                required_error:
-                  "article[i].image value is necessary to access this route",
-              })
+  "/:stateId/:cityId/article",
+  zodInputValidation(
+    z.object({
+      articles: z.array(
+        z.object({
+          title: z.string({
+            required_error:
+              "article[i].title value is necessary to access this route",
           }),
-          {
-            required_error: "article value is necessary to access this route",
-            invalid_type_error: "article must be an array",
-          }
-        ),
-      })
-    ),
-    async (request: Request, response: Response) => {
-      try {
-        const pageResult = await page.getPage(
-          request.params.stateId,
-          request.params.cityId
-        );
-        if (!pageResult) return errors.NotFoundError(response);
-  
-        await page.updateArticles(
-          request.params.stateId,
-          request.params.cityId,
-          request.body.articles
-        );
-        return response.status(200).end();
-      } catch (error) {
-        logger.log(error);
-        return errors.InternalServerError(response);
+          text: z.string({
+            required_error:
+              "article[i].text value is necessary to access this route",
+          }),
+          created_at: z.coerce.date({
+            required_error:
+              "article[i].created_at value is necessary to access this route",
+          }),
+          slug: z.string({
+            required_error:
+              "article[i].slug value is necessary to access this route",
+          }),
+          image: z.string({
+            required_error:
+              "article[i].image value is necessary to access this route",
+          }),
+        }),
+        {
+          required_error: "article value is necessary to access this route",
+          invalid_type_error: "article must be an array",
+        }
+      ),
+    })
+  ),
+  async (request: Request, response: Response) => {
+    try {
+      const cache = await CacheSystem.search(`not-found-edit-${request.params.stateId}/${request.params.cityId}`);
+      if(cache && cache.exists == false){
+        return errors.NotFoundError(response);
       }
+
+      if(cache && cache.exists == true){
+        queue.add({
+          type: "articles",
+          data: {
+            state: request.params.stateId,
+            city: request.params.cityId,
+            articles: request.body.articles,
+          },
+        });
+
+        return response.status(200).end();
+      }
+
+      const pageResult = await page.getPage(
+        request.params.stateId,
+        request.params.cityId
+      );
+
+      if (!pageResult) {
+        await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: false});
+        return errors.NotFoundError(response)
+      };
+
+      await CacheSystem.save(`not-found-edit-${request.params.stateId}/${request.params.cityId}`, 600, {exists: true});
+
+      queue.add({
+        type: "articles",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          articles: request.body.articles,
+        },
+      });
+      
+      return response.status(200).end();
+    } catch (error) {
+      logger.log(error);
+      return errors.InternalServerError(response);
     }
-  );
+  }
+);
 
 export default PrivateRoute;

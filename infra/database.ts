@@ -1,10 +1,7 @@
 import dotenv from "dotenv";
-import mongoose from "mongoose";
-import Errors from "./errors";
+dotenv.config();
 
-if (process.env.NODE_ENV !== "PRODUCTION") {
-  dotenv.config();
-}
+import mongoose from "mongoose";
 
 let dbClient: mongoose.Connection | null = null;
 

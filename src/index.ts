@@ -1,25 +1,15 @@
 //IMPORTS ======================================================
 import Dotenv from "dotenv";
+Dotenv.config();
+
 import Express from "express";
-import { ClerkExpressWithAuth, LooseAuthProp } from "@clerk/clerk-sdk-node";
 
 import cors from "cors";
-import helmet from "helmet";
 
 import Logger from "./../infra/logger";
 import PublicRouter from "./routes/public";
 import PrivateRouter from "./routes/private";
-
-if (process.env.NODE_ENV !== "PRODUCTION") {
-  Dotenv.config();
-}
-
-//Declare Globals to avoid clerk erros =========================
-declare global {
-  namespace Express {
-    interface Request extends LooseAuthProp {}
-  }
-}
+import UtilRouter from "./routes/util";
 
 //CREATE INSTANCE ======================================================
 
@@ -33,13 +23,12 @@ Instance.use(
     origin: "*",
   })
 );
-Instance.use(helmet());
-Instance.use(ClerkExpressWithAuth({}));
 
 //DEFINE ROUTES ========================================================
 
 Instance.use("/public", PublicRouter);
 Instance.use("/private", PrivateRouter);
+Instance.use("/util", UtilRouter);
 
 //START ========================================================
 

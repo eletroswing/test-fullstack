@@ -19,7 +19,7 @@ async function findStateById(stateId: string) {
 async function getAllStates(page: any = 1) {
   const skip = (page - 1) * 30;
 
-  const states = await models.StateModel.find().skip(skip).limit(30);
+  const states = await models.StateModel.find().select('-cities').skip(skip).limit(30);
 
   return states;  
 }

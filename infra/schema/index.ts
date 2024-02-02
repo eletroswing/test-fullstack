@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { string } from "zod";
 
 const HeaderSchema = new Schema({
   image: String,
@@ -22,7 +23,7 @@ const ReviewsSchema = new Schema({
   username: String,
   image: String,
   content: String,
-  starts: Number,
+  stars: Number,
   created_at: String,
   user_exists_from: String,
 });
@@ -37,6 +38,8 @@ const AttorneySchema = new Schema({
   name: String,
   address: String,
   phone: String,
+  email: String,
+  image: String,
   website: String,
   description: String,
   clicks: {

@@ -197,23 +197,24 @@ async function updateAttorneyClick(
     const state = await models.StateModel.findOneAndUpdate(
       {
         state_id: stateId,
-        cities: {
-          $elemMatch: {
-            city_id: cityId,
-            page: { attorney: { $elemMatch: { cid: cid } } },
-          },
-        },
+        "cities.city_id": cityId,
+        "cities.page.attorney.cid": cid
       },
       {
         $inc: {
-          "cities.$.page.attorney.$.click": 1,
-        },
+          "cities.$[cityElem].page.attorney.$[attorneyElem].clicks": 1
+        }
       },
-      { new: true }
+      { 
+        new: true,
+        arrayFilters: [
+          { "cityElem.city_id": cityId },
+          { "attorneyElem.cid": cid }
+        ]
+      }
     );
 
-    return state?.cities.find((city) => city.city_id === cityId)?.page
-      ?.attorney?.find((attorney) => attorney.cid === cid)?.clicks;
+    return state
   } catch (err) {
     throw new Error(`Error updating the attorney: ${err}`);
   }

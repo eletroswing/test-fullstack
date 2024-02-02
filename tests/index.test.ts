@@ -1,11 +1,10 @@
 import Dotenv from "dotenv";
+Dotenv.config();
+
 import state from "./../src/adapters/state";
 import city from "./../src/adapters/city";
 import page from "./../src/adapters/page";
 
-if (process.env.NODE_ENV !== "PRODUCTION") {
-  Dotenv.config();
-}
 
 const API_URL = `http://localhost:${process.env.PORT}`;
 
