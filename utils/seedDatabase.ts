@@ -40,7 +40,9 @@ async function run() {
         city_id: row.city.toLowerCase().replace(/ /g, "_"),
         page: {
           zips: row.zips,
-          header: { },
+          header: {
+            title: `Header for ${row.city}`
+          },
           articles: [],
           faq: faqs,
           reviews: [],
