@@ -36,8 +36,6 @@ PublicRouter.get("/", async (request: Request, response: Response) => {
     if (!stateResult || !stateResult.length)
       return errors.NotFoundError(response);
 
-    console.log(stateResult)
-    
     await CacheSystem.save(`rootpage-${request.query.page ? Number(request.query.page) : 1}`, 3600, stateResult);
 
     return response.status(200).json({
