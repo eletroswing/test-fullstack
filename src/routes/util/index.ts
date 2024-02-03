@@ -17,7 +17,7 @@ UtilRouter.post(
         data: {
           state: request.params.stateId,
           city: request.params.cityId,
-          cid: request.body.cid,
+          cid: request.params.cid,
         },
       });
 
