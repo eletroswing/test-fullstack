@@ -218,10 +218,6 @@ PrivateRoute.patch(
             required_error:
               "reviews[i].username value is necessary to access this route",
           }),
-          image: z.string({
-            required_error:
-              "reviews[i].image value is necessary to access this route",
-          }),
           content: z.string({
             required_error:
               "reviews[i].content value is necessary to access this route",
@@ -389,10 +385,6 @@ PrivateRoute.patch(
             required_error:
               "attorney[i].name value is necessary to access this route",
           }),
-          image: z.string({
-            required_error:
-              "attorney[i].image value is necessary to access this route",
-          }),
           email: z
             .string({
               required_error:
@@ -497,10 +489,6 @@ PrivateRoute.patch(
           slug: z.string({
             required_error:
               "article[i].slug value is necessary to access this route",
-          }),
-          image: z.string({
-            required_error:
-              "article[i].image value is necessary to access this route",
           }),
         }),
         {

@@ -10,6 +10,14 @@ import Logger from "./../infra/logger";
 import PublicRouter from "./routes/public";
 import PrivateRouter from "./routes/private";
 import UtilRouter from "./routes/util";
+import { ClerkExpressWithAuth, LooseAuthProp } from "@clerk/clerk-sdk-node";
+
+declare global {
+  namespace Express {
+    interface Request extends LooseAuthProp {}
+  }
+}
+
 
 //CREATE INSTANCE ======================================================
 
@@ -18,6 +26,7 @@ const Instance: Express.Application = Express();
 //DEFINE MIDDLEWARES ======================================================
 
 Instance.use(Express.json());
+Instance.use(ClerkExpressWithAuth({}));
 Instance.use(
   cors({
     origin: "*",

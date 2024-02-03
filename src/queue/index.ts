@@ -7,7 +7,6 @@ const queue = new Bull("header", process.env.REDIS as string);
 
 queue.process(2, async (job, done) => {
   const data = job.data;
-
   switch (data.type) {
     case "header":
       await page.updateHeader(
@@ -44,13 +43,20 @@ queue.process(2, async (job, done) => {
         data.data.attorney
       );
       break;
-    case "article":
-      await page.updateArticles(
-        data.data.state,
-        data.data.city,
-        data.data.articles
-      );
+    case "articles":
+        await page.updateArticles(
+          data.data.state,
+          data.data.city,
+          data.data.articles
+          );
       break;
+      case "attorney_click":
+        await page.updateAttorneyClick(
+          data.data.state,
+          data.data.city,
+          data.data.cid
+        );
+        break;
     default:
       break;
   }

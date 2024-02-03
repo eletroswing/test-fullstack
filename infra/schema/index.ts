@@ -11,7 +11,6 @@ const ArticlesSchema = new Schema({
   text: String,
   created_at: String,
   slug: String,
-  image: String,
 });
 
 const FAQSchema = new Schema({
@@ -21,7 +20,6 @@ const FAQSchema = new Schema({
 
 const ReviewsSchema = new Schema({
   username: String,
-  image: String,
   content: String,
   stars: Number,
   created_at: String,
@@ -39,7 +37,6 @@ const AttorneySchema = new Schema({
   address: String,
   phone: String,
   email: String,
-  image: String,
   website: String,
   description: String,
   clicks: {

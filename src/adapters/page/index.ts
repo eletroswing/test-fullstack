@@ -78,7 +78,6 @@ async function updateReviews(
   cityId: string,
   reviews: {
     username: String;
-    image: String;
     content: String;
     starts: Number;
     created_at: String;
@@ -154,7 +153,6 @@ async function updateArticles(
     text: String;
     created_at: String;
     slug: String;
-    image: String;
   }[]
 ) {
   try {
@@ -173,14 +171,10 @@ async function updateArticles(
 
 async function getArticle(stateId: string, cityId: string, slug: string) {
   try {
-    const state = await models.StateModel.findOne({
-      state_id: stateId,
-      cities: { $elemMatch: { city_id: cityId } },
-    });
+    const page: any = await getPage(stateId, cityId);
+    if(!page && !page.articles.length) return
 
-    const article = state?.cities
-      .find((city) => city.city_id === cityId)
-      ?.page?.articles.find((article) => article.slug == slug);
+    const article = page.articles.find((article: any) => article.slug == slug);
 
     return article;
   } catch (err) {

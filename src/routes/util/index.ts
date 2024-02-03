@@ -3,7 +3,7 @@ import { Router, Request, Response } from "express";
 import errors from "../../../infra/errors";
 import logger from "../../../infra/logger";
 
-import page from "../../adapters/page";
+import queue from "../../queue";
 
 const UtilRouter: Router = Router();
 
@@ -11,12 +11,15 @@ UtilRouter.post(
   "/attorney/:stateId/:cityId/:cid",
   async (request: Request, response: Response) => {
     try {
-      const pageResult = await page.updateAttorneyClick(
-        request.params.stateId,
-        request.params.cityId,
-        request.params.cid
-      );
-      if (!pageResult) return errors.NotFoundError(response);
+
+      queue.add({
+        type: "attorney_click",
+        data: {
+          state: request.params.stateId,
+          city: request.params.cityId,
+          cid: request.body.cid,
+        },
+      });
 
       return response.status(200).end();
     } catch (error) {
