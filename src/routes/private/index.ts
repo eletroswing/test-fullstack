@@ -410,7 +410,6 @@ PrivateRoute.patch(
               required_error:
                 "attorney[i].description value is necessary to access this route",
             })
-            .max(250, "attorney[i].description can have 250 characters."),
         }),
         {
           required_error: "attorney value is necessary to access this route",
